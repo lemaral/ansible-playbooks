@@ -1,0 +1,30 @@
+- hosts: docker
+
+  tasks:
+
+  - name: list running containers
+    command: docker ps -q
+    register: running_containers
+
+  - name: stop all running containers
+    when: running_containers|success
+    when: running_containers.stdout != ""
+    shell: docker stop {{running_containers.stdout}}
+
+  - name: list all containers
+    command: docker ps -aq
+    register: all_containers
+
+  - name: rm all containers
+    when: all_containers|success
+    when: all_containers.stdout != ""
+    shell: docker rm {{all_containers.stdout}}
+
+  - name: list all images
+    shell: docker images -q
+    register: all_images
+
+  - name: rmi all images
+    when: all_images|success
+    when: all_images.stdout != ""
+    shell: docker rmi {{all_images.stdout}}
