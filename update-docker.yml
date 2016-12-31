@@ -20,11 +20,10 @@
       url: "https://apt.dockerproject.org/repo/pool/main/d/docker-engine/{{deb}}"
       dest: "/root/{{deb}}"
       validate_certs: no
-    environment: "{{proxy_env}}"
-    register: downloaded_docker_xenial
+    register: downloaded
 
   - name: Install docker deb
-    when: downloaded_docker_xenial|success
+    when: downloaded|success
     command: "gdebi --non-interactive /root/{{deb}}"
 
   - name: Register uname_s
