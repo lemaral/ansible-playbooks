@@ -1,0 +1,44 @@
+- hosts: docker
+  vars:
+    deb: "docker-engine_1.12.5-0~ubuntu-{{ansible_distribution_release}}_amd64.deb"
+
+  tasks:
+  - name: Check host is Ubuntu
+    when: ansible_distribution != "Ubuntu"
+    fail: msg="This playbook is only for Ubuntu hosts"
+
+  - name: Uninstall docker.io
+    apt: pkg=docker.io state=absent
+
+  - name: Install gdebi
+    apt: pkg=gdebi-core state=latest
+    register: installed
+
+  - name: Download docker deb
+    when: installed|success
+    get_url:
+      url: "https://apt.dockerproject.org/repo/pool/main/d/docker-engine/{{deb}}"
+      dest: "/root/{{deb}}"
+      validate_certs: no
+    environment: "{{proxy_env}}"
+    register: downloaded_docker_xenial
+
+  - name: Install docker deb
+    when: downloaded_docker_xenial|success
+    command: "gdebi --non-interactive /root/{{deb}}"
+
+  - name: Register uname_s
+    shell: uname -s
+    register: uname_s
+
+  - name: Register uname_m
+    shell: uname -m
+    register: uname_m
+
+  - name: Download docker compose
+    get_url:
+      url: https://github.com/docker/compose/releases/download/1.9.0/docker-compose-{{uname_s.stdout}}-{{uname_m.stdout}}
+      dest: /usr/local/bin/docker-compose
+      validate_certs: no
+      mode: 0755
+      force: yes
