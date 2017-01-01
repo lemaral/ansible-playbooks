@@ -7,24 +7,21 @@
     register: running_containers
 
   - name: stop all running containers
-    when: running_containers|success
-    when: running_containers.stdout != ""
-    shell: docker stop {{running_containers.stdout}}
+    when: running_containers|success and running_containers.stdout != ""
+    command: "docker stop {{running_containers.stdout}}"
 
   - name: list all containers
     command: docker ps -aq
     register: all_containers
 
   - name: rm all containers
-    when: all_containers|success
-    when: all_containers.stdout != ""
-    shell: docker rm {{all_containers.stdout}}
+    when: all_containers|success and all_containers.stdout != ""
+    command: "docker rm {{all_containers.stdout}}"
 
   - name: list all images
     shell: docker images -q
     register: all_images
 
   - name: rmi all images
-    when: all_images|success
-    when: all_images.stdout != ""
-    shell: docker rmi {{all_images.stdout}}
+    when: all_images|success and all_images.stdout != ""
+    command: "docker rmi {{all_images.stdout}}"
